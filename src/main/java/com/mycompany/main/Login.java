@@ -1,3 +1,5 @@
+
+package com.mycompany.main;
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
@@ -29,15 +31,16 @@ public class Login {
     }
 
     // Boolean: checkPasswordComplexity()
-    public Boolean checkPasswordComplexity() {
-        return password.length() >= 8
-                && password.matches(".[A-Z].")
-                && password.matches(".[0-9].")
-                && password.matches(".[!@#$%^&()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*");
-    }
+    public boolean checkPasswordComplexity() {
+    if (password == null) return false;
+
+    // At least 8 characters, one uppercase, one digit, one special char
+    String pattern = "^(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,}$";
+    return password.matches(pattern);
+}
+
 
     // Boolean: checkCellPhoneNumber()
-    // REFERENCE: Regex for SA number with international code
    
     public Boolean checkCellPhoneNumber() {
         // Condition: contains international code (+27) and correct length

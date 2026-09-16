@@ -12,7 +12,7 @@ import java.util.Scanner;
 public class Main {
 
     public static void main(String[] args) {
-          Scanner scanner = new Scanner(System.in);
+          Scanner input = new Scanner(System.in);
 
        System.out.println("=== Create Account ===");
         System.out.print("Enter First Name: ");
@@ -29,9 +29,9 @@ public class Main {
         Login user = new Login(firstName, lastName, username, password, cell);
 
         // Show validation messages
-        System.out.println(user.getUsernameStatus());
-        System.out.println(user.getPasswordStatus());
-        System.out.println(user.getCellPhoneStatus());
+        //System.out.println(user.getUsernameStatus());
+       // System.out.println(user.getPasswordStatus());
+       //rrr System.out.println(user.getCellPhoneStatus());
 
         System.out.println(user.registerUser());
 
