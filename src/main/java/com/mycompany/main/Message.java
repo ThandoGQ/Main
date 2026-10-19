@@ -3,23 +3,25 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.mycompany.main;
-import java.util.*;
+
 import java.io.FileWriter;
 import java.io.IOException;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import java.util.ArrayList;
+import java.util.Random;
+
 /**
- *
  * @author Student
  */
 public class Message {
+
     public String messageId;
     public String recipient;
     public String message;
     public String messageHash;
+
     public static int totalMessages = 0;
     public static ArrayList<Message> allSentMessages = new ArrayList<>();
-    public static ArrayList<JSONObject> jsonStore = new ArrayList<>();
+    public static ArrayList<String> jsonStore = new ArrayList<>();
 
     public Message(String messageId, String recipient, String message) {
         this.messageId = messageId;
@@ -27,18 +29,14 @@ public class Message {
         this.message = message;
     }
 
+    // Generates a random 10-digit message ID
     public static String generateId() {
         Random rand = new Random();
-        long num = 1000000000L + (long)(rand.nextDouble() * 9000000000L);
+        long num = 1000000000L + (long) (rand.nextDouble() * 9000000000L);
         return String.valueOf(num);
     }
 
-    // From table: Boolean checkMessageID() - ID not more than ten chars
-    public Boolean checkMessageID() {
-        return this.messageId.length() <= 10;
-    }
-
-    // Q9 EXACT STRINGS - Cell number correctly formatted
+    // Recipient must be +27 followed by 9 digits, or 0 followed by 9 digits
     public String checkRecipientCell() {
         boolean valid = recipient.matches("^\\+27[0-9]{9}$") || recipient.matches("^0[0-9]{9}$");
         if (valid) {
@@ -48,7 +46,7 @@ public class Message {
         }
     }
 
-    // Q9 EXACT STRINGS - Message not more than 250 chars
+    // Message must be 250 characters or less
     public String checkMessageLength() {
         if (message.length() <= 250) {
             return "Message ready to send.";
@@ -58,35 +56,36 @@ public class Message {
         }
     }
 
-    // FIXED to return 00:0:HITONIGHT - removes ? , !
+    // Uses the stored hash if there is one, otherwise builds it from the current message count
     public String createMessageHash() {
+        if (messageHash != null) {
+            return messageHash;
+        }
+        return createMessageHash(totalMessages);
+    }
+
+    // Hash format: first two ID digits : message number : FIRSTWORD+LASTWORD (letters/digits only, uppercase)
+    // e.g. 00:0:HITONIGHT
+    public String createMessageHash(int number) {
         String firstTwo = messageId.substring(0, 2);
         String[] words = message.trim().split("\\s+");
         String first = words[0].replaceAll("[^A-Za-z0-9]", "");
         String last = words[words.length - 1].replaceAll("[^A-Za-z0-9]", "");
-        messageHash = firstTwo + ":" + totalMessages + ":" + (first + last).toUpperCase();
+        messageHash = firstTwo + ":" + number + ":" + (first + last).toUpperCase();
         return messageHash;
     }
 
-    // Overloaded for JUnit to test 00:0:HITONIGHT
-    public String createMessageHash(int messageNumber) {
-        String firstTwo = messageId.substring(0, 2);
-        String[] words = message.trim().split("\\s+");
-        String first = words[0].replaceAll("[^A-Za-z0-9]", "");
-        String last = words[words.length - 1].replaceAll("[^A-Za-z0-9]", "");
-        return firstTwo + ":" + messageNumber + ":" + (first + last).toUpperCase();
-    }
-
-    // From table: String SentMessage() - EXACT STRINGS
+    // 1 = Send, 2 = Disregard, 3 = Store
     public String SentMessage(String choice) {
         switch (choice) {
-            case "1": // Send Message
+            case "1": // Send
+                createMessageHash(totalMessages);
                 allSentMessages.add(this);
                 totalMessages++;
                 return "Message successfully sent.";
-            case "2": // Disregard Message / Discard
+            case "2": // Disregard
                 return "Press 0 to delete the message.";
-            case "3": // Store Message
+            case "3": // Store
                 storeMessage();
                 return "Message successfully stored.";
             default:
@@ -95,7 +94,9 @@ public class Message {
     }
 
     public String printMessages() {
-        if (allSentMessages.isEmpty()) return "No messages sent yet.";
+        if (allSentMessages.isEmpty()) {
+            return "No messages sent yet.";
+        }
         StringBuilder sb = new StringBuilder();
         for (Message m : allSentMessages) {
             sb.append("MessageID: ").append(m.messageId).append("\n");
@@ -110,22 +111,36 @@ public class Message {
         return totalMessages;
     }
 
-    public void storeMessage() {
-        JSONObject obj = new JSONObject();
-        obj.put("messageId", messageId);
-        obj.put("messageHash", createMessageHash());
-        obj.put("recipient", recipient);
-        obj.put("message", message);
-        jsonStore.add(obj);
-        try (FileWriter file = new FileWriter("storedMessages.json")) {
-            JSONArray array = new JSONArray();
-            array.addAll(jsonStore);
-            file.write(array.toJSONString());
-        } catch (IOException e) { e.printStackTrace(); }
+    // Same method with the normal spelling
+    public int returnTotalMessages() {
+        return totalMessages;
     }
 
-    public String getMessageId() { return messageId; }
-    public String getMessageHash() { return messageHash; }
-}
-    
+    // Saves stored messages to storedMessages.json (written by hand, no library needed)
+    public void storeMessage() {
+        String obj = "{\"messageId\":\"" + esc(messageId) + "\","
+                + "\"messageHash\":\"" + esc(createMessageHash()) + "\","
+                + "\"recipient\":\"" + esc(recipient) + "\","
+                + "\"message\":\"" + esc(message) + "\"}";
+        jsonStore.add(obj);
 
+        try (FileWriter file = new FileWriter("storedMessages.json")) {
+            file.write("[" + String.join(",", jsonStore) + "]");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Escapes backslashes and quotes so the JSON stays valid
+    private static String esc(String s) {
+        return s.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+
+    public String getMessageId() {
+        return messageId;
+    }
+
+    public String getMessageHash() {
+        return messageHash;
+    }
+}
