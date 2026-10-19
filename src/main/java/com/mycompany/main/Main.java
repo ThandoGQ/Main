@@ -46,6 +46,44 @@ public class Main {
         }
 
         input.close();
+        
+         System.out.println("Welcome to QuickChat.");
+
+        boolean run = true;
+        while (run) {
+            System.out.println("\n1) Send Messages\n2) Show recently sent messages\n3) Quit");
+            System.out.print("Choose: "); String opt = scanner.nextLine();
+
+            switch (opt) {
+                case "1":
+                    System.out.print("How many messages? "); int total = Integer.parseInt(scanner.nextLine());
+                    for (int i = 0; i < total; i++) {
+                        System.out.print("Recipient: "); String rec = scanner.nextLine();
+                        System.out.print("Message: "); String txt = scanner.nextLine();
+                        Message msg = new Message(Message.generateId(), rec, txt);
+
+                        System.out.println(msg.checkRecipientCell());
+                        if (msg.checkRecipientCell().contains("incorrectly")) { i--; continue; }
+
+                        System.out.println(msg.checkMessageLength());
+                        if (msg.checkMessageLength().contains("exceeds")) { i--; continue; }
+
+                        System.out.print("1) Send 2) Disregard 3) Store: "); String choice = scanner.nextLine();
+                        System.out.println(msg.SentMessage(choice));
+                        if (choice.equals("1")) System.out.println(msg.createMessageHash() + "\n" + msg.printMessages());
+                    }
+                    System.out.println("Total sent: " + new Message("0","0","0").returnTotalMessagess());
+                    break;
+                case "2":
+                    System.out.println("Coming Soon.");
+                    break;
+                case "3":
+                    run = false;
+                    System.out.println("Quitting...");
+                    break;
+            }
+        }
+        scanner.close();
     }
 }
     
