@@ -13,6 +13,10 @@ import java.util.Random;
  * @author Student
  */
 public class Message {
+    // Message ID must exist and be no more than 10 characters
+public boolean checkMessageID() {
+    return messageId != null && messageId.length() <= 10;
+}
 
     public String messageId;
     public String recipient;

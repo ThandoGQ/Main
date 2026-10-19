@@ -4,6 +4,7 @@
  */
 package com.mycompany.main;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -12,8 +13,16 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Student
  */
 public class MessageTest {
-    
-      @Test
+
+    // Reset the shared (static) data so every test starts clean
+    @BeforeEach
+    public void resetState() {
+        Message.totalMessages = 0;
+        Message.allSentMessages.clear();
+        Message.jsonStore.clear();
+    }
+
+    @Test
     public void testMessageHash_Task1() {
         // Must return 00:0:HITONIGHT
         String id = "0012345678";
@@ -26,7 +35,7 @@ public class MessageTest {
         String[] texts = {"Hi Mike, can you join us for dinner tonight?", "Hi Keegan, did you receive the payment?"};
         String[] expected = {"00:0:HITONIGHT", "00:1:HIPAYMENT"};
         for (int i = 0; i < texts.length; i++) {
-            Message m = new Message("00"+10000000, "+27718693002", texts[i]);
+            Message m = new Message("00" + 10000000, "+27718693002", texts[i]);
             assertEquals(expected[i], m.createMessageHash(i));
         }
     }
@@ -38,6 +47,12 @@ public class MessageTest {
         System.out.println("Message ID generated: " + id);
         assertTrue(m.checkMessageID());
         assertEquals(10, id.length());
+    }
+
+    @Test
+    public void testMessageIDTooLong() {
+        Message m = new Message("12345678901", "+27718693002", "test");
+        assertFalse(m.checkMessageID());
     }
 
     @Test
@@ -73,9 +88,16 @@ public class MessageTest {
     }
 
     @Test
+    public void testInvalidChoice() {
+        Message m = new Message(Message.generateId(), "+27718693002", "test");
+        assertEquals("Invalid choice", m.SentMessage("9"));
+    }
+
+    @Test
     public void testTask1Flow() {
         Message m1 = new Message(Message.generateId(), "+27718693002", "Hi Mike, can you join us for dinner tonight?");
         assertEquals("Message successfully sent.", m1.SentMessage("1"));
+        assertEquals(1, m1.returnTotalMessagess());
         System.out.println("Total: " + m1.returnTotalMessagess());
     }
 
@@ -83,7 +105,22 @@ public class MessageTest {
     public void testTask2Flow() {
         Message m2 = new Message(Message.generateId(), "08575975889", "Hi Keegan, did you receive the payment?");
         assertEquals("Press 0 to delete the message.", m2.SentMessage("2"));
+        assertEquals(0, m2.returnTotalMessagess());
+    }
+
+    @Test
+    public void testPrintMessagesEmpty() {
+        Message m = new Message(Message.generateId(), "+27718693002", "test");
+        assertEquals("No messages sent yet.", m.printMessages());
+    }
+
+    @Test
+    public void testPrintMessagesAfterSend() {
+        Message m = new Message("0012345678", "+27718693002", "Hi Mike, can you join us for dinner tonight?");
+        m.SentMessage("1");
+        String output = m.printMessages();
+        assertTrue(output.contains("0012345678"));
+        assertTrue(output.contains("00:0:HITONIGHT"));
+        assertTrue(output.contains("+27718693002"));
     }
 }
-    
-
